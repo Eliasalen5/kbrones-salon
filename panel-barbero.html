@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Barbero - Kbrones Salon</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="barber-layout">
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar__header">
+                <img src="assets/images/logo.png" alt="Kbrones" class="sidebar__logo" onerror="this.style.display='none'">
+                <span class="sidebar__brand">Kbrones Salon</span>
+            </div>
+            
+            <div class="profile-section">
+                <div class="profile-avatar" id="profileAvatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h4 class="profile-name" id="profileName">Barbero</h4>
+                <p class="profile-status">
+                    <i class="fas fa-circle"></i> En línea
+                </p>
+            </div>
+            
+            <nav class="sidebar__nav">
+                <div class="nav-item active" data-section="turnos">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Mis Turnos</span>
+                </div>
+                <div class="nav-item" data-section="horarios">
+                    <i class="fas fa-clock"></i>
+                    <span>Mis Horarios</span>
+                </div>
+                <div class="nav-item" data-section="servicios">
+                    <i class="fas fa-cut"></i>
+                    <span>Mis Servicios</span>
+                </div>
+                <div class="nav-item" data-section="perfil">
+                    <i class="fas fa-user-cog"></i>
+                    <span>Mi Perfil</span>
+                </div>
+            </nav>
+            
+            <div class="sidebar__footer">
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main">
+            <header class="panel-header">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div>
+                    <h1 class="panel-header__title" id="sectionTitle">Mis Turnos</h1>
+                    <p class="panel-header__date" id="currentDate"></p>
+                </div>
+            </header>
+
+            <div class="content">
+                <!-- Turnos Section -->
+                <section class="section active" id="turnosSection">
+                    <div class="stats-row">
+                        <div class="stat-card">
+                            <div class="stat-card__number" id="statHoy">0</div>
+                            <div class="stat-card__label">Turnos Hoy</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card__number" id="statSemana">0</div>
+                            <div class="stat-card__label">Esta Semana</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card__number" id="statMes">0</div>
+                            <div class="stat-card__label">Este Mes</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card__header">
+                            <h3 class="card__title">
+                                <i class="fas fa-list"></i> Lista de Turnos
+                            </h3>
+                        </div>
+                        <div class="filters">
+                            <select id="filtroEstado">
+                                <option value="">Todos los estados</option>
+                                <option value="pendiente">Pendientes</option>
+                                <option value="confirmado">Confirmados</option>
+                                <option value="completed">Completados</option>
+                                <option value="cancelled">Cancelados</option>
+                            </select>
+                        </div>
+                        <div class="turnos-list" id="turnosList">
+                            <div class="empty-state">
+                                <i class="fas fa-calendar-times"></i>
+                                <p>Cargando turnos...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Horarios Section -->
+                <section class="section" id="horariosSection">
+                    <div class="card">
+                        <div class="card__header">
+                            <h3 class="card__title">
+                                <i class="fas fa-clock"></i> Configurar Mis Horarios
+                            </h3>
+                            <button class="btn btn--primary" id="btnGuardarHorarios">
+                                <i class="fas fa-save"></i> Guardar
+                            </button>
+                        </div>
+                        <p style="color: var(--gray); margin-bottom: 20px;">
+                            Configurá los días y horarios en que atendés. Los clientes solo podrán reservar en tus horarios disponibles.
+                        </p>
+                        <div id="horariosConfig"></div>
+                    </div>
+                </section>
+
+                <!-- Servicios Section -->
+                <section class="section" id="serviciosSection">
+                    <div class="card">
+                        <div class="card__header">
+                            <h3 class="card__title">
+                                <i class="fas fa-cut"></i> Mis Servicios
+                            </h3>
+                            <button class="btn btn--primary" id="btnGuardarServicios">
+                                <i class="fas fa-save"></i> Guardar
+                            </button>
+                        </div>
+                        <p style="color: var(--gray); margin-bottom: 20px;">
+                            Seleccioná los servicios que ofrecés. Los clientes solo verán los servicios que selecciones.
+                        </p>
+                        <div class="servicios-grid" id="serviciosGrid"></div>
+                    </div>
+                </section>
+
+                <!-- Perfil Section -->
+                <section class="section" id="perfilSection">
+                    <div class="card">
+                        <div class="card__header">
+                            <h3 class="card__title">
+                                <i class="fas fa-user"></i> Mi Perfil
+                            </h3>
+                        </div>
+                        <form id="perfilForm">
+                            <div class="form-group">
+                                <label>Nombre Completo</label>
+                                <input type="text" id="perfilNombre" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="perfilEmail" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label>Teléfono</label>
+                                <input type="tel" id="perfilTelefono">
+                            </div>
+                            <div class="form-group">
+                                <label>URL de Foto</label>
+                                <input type="url" id="perfilFoto" placeholder="https://...">
+                            </div>
+                            <button type="submit" class="btn btn--primary">
+                                <i class="fas fa-save"></i> Guardar Cambios
+                            </button>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Editar Turno -->
+    <div class="modal" id="editTurnoModal">
+        <div class="modal__content">
+            <div class="modal__header">
+                <h3>Editar Turno</h3>
+                <button class="modal__close" id="closeEditModal">&times;</button>
+            </div>
+            <form id="editTurnoForm">
+                <input type="hidden" id="editTurnoId">
+                
+                <div class="form-group">
+                    <label>Cliente</label>
+                    <input type="text" id="editClientName" disabled>
+                </div>
+                
+                <div class="form-group">
+                    <label>Servicio</label>
+                    <select id="editService" required></select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" id="editFecha" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Hora</label>
+                    <select id="editHora" required></select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select id="editStatus">
+                        <option value="pendiente">Pendiente</option>
+                        <option value="confirmado">Confirmado</option>
+                        <option value="completado">Completado</option>
+                        <option value="cancelled">Cancelado</option>
+                    </select>
+                </div>
+                
+                <div class="modal__actions">
+                    <button type="button" class="btn btn--danger" id="btnDeleteTurno">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                    <button type="submit" class="btn btn--primary">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCd4HqPGMtiR0bHJD8GEozhfNl3-MG2tiw",
+            authDomain: "kbrones-salon-1997.firebaseapp.com",
+            projectId: "kbrones-salon-1997",
+            storageBucket: "kbrones-salon-1997.firebasestorage.app",
+            messagingSenderId: "335118146301",
+            appId: "1:335118146301:web:85aa85bd9ee97278d03c94",
+            measurementId: "G-9BCLJ9N9Q5"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let currentUser = null;
+        let currentBarber = null;
+        let allServices = [];
+        let myAppointments = [];
+        let myServices = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM ready, iniciando...');
+            init();
+        });
+
+        async function init() {
+            try {
+                auth.onAuthStateChanged(async (user) => {
+                    if (!user) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    
+                    if (!userDoc.exists || userDoc.data().role !== 'barber') {
+                        await auth.signOut();
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    currentUser = user;
+                    
+                    // Obtener perfil de barbero (el ID del documento es el UID del usuario)
+                    let profDoc = await db.collection('professionals').doc(user.uid).get();
+                    
+                    // Si no existe el perfil, crearlo
+                    if (!profDoc.exists) {
+                        await db.collection('professionals').doc(user.uid).set({
+                            name: user.displayName || 'Barbero',
+                            email: user.email,
+                            userId: user.uid,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            schedule: {},
+                            services: []
+                        });
+                        profDoc = await db.collection('professionals').doc(user.uid).get();
+                    }
+                    
+                    currentBarber = { id: profDoc.id, ...profDoc.data() };
+                    myServices = currentBarber.services || [];
+
+                    await loadData();
+                    setupEventListeners();
+                    renderProfile();
+                    renderHorarios();
+                    renderServicios();
+                    updateStats();
+                    showCurrentDate();
+                });
+            } catch (error) {
+                console.error('Error en init:', error);
+            }
+        }
+
+        async function loadData() {
+            // Cargar servicios disponibles
+            const serviciosSnap = await db.collection('services').get();
+            allServices = serviciosSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+            // Cargar mis turnos
+            if (currentBarber) {
+                try {
+                    const turnosSnap = await db.collection('appointments')
+                        .where('professionalId', '==', currentBarber.id)
+                        .orderBy('date', 'desc')
+                        .get();
+                    
+                    myAppointments = turnosSnap.docs.map(d => ({
+                        id: d.id,
+                        ...d.data(),
+                        dateObj: d.data().date ? d.data().date.toDate() : new Date()
+                    }));
+                } catch (error) {
+                    // Alternativa: cargar todos y filtrar
+                    const allTurnos = await db.collection('appointments').get();
+                    myAppointments = allTurnos.docs
+                        .filter(d => d.data().professionalId === currentBarber.id)
+                        .map(d => ({
+                            id: d.id,
+                            ...d.data(),
+                            dateObj: d.data().date ? d.data().date.toDate() : new Date()
+                        }))
+                        .sort((a, b) => b.dateObj - a.dateObj);
+                }
+            }
+
+            renderTurnos();
+        }
+
+        function setupEventListeners() {
+            // Mobile menu toggle
+            document.getElementById('menuToggle').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.add('active');
+                document.getElementById('sidebarOverlay').classList.add('active');
+            });
+            
+            document.getElementById('sidebarOverlay').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.remove('active');
+                document.getElementById('sidebarOverlay').classList.remove('active');
+            });
+
+            // Navegación
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const section = item.dataset.section;
+                    switchSection(section);
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    // Close mobile menu
+                    document.getElementById('sidebar').classList.remove('active');
+                    document.getElementById('sidebarOverlay').classList.remove('active');
+                });
+            });
+
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', async () => {
+                await auth.signOut();
+                window.location.href = 'index.html';
+            });
+
+            // Guardar horarios
+            document.getElementById('btnGuardarHorarios').addEventListener('click', saveHorarios);
+
+            // Guardar servicios
+            document.getElementById('btnGuardarServicios').addEventListener('click', saveServicios);
+
+            // Perfil form
+            document.getElementById('perfilForm').addEventListener('submit', savePerfil);
+
+            // Filtro turnos
+            document.getElementById('filtroEstado').addEventListener('change', renderTurnos);
+        }
+
+        function switchSection(section) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(section + 'Section').classList.add('active');
+            
+            const titles = {
+                turnos: 'Mis Turnos',
+                horarios: 'Mis Horarios',
+                servicios: 'Mis Servicios',
+                perfil: 'Mi Perfil'
+            };
+            document.getElementById('sectionTitle').textContent = titles[section] || 'Mis Turnos';
+        }
+
+        function showCurrentDate() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('es-AR', options);
+        }
+
+        // Profile
+        function renderProfile() {
+            if (!currentBarber) return;
+
+            document.getElementById('profileName').textContent = currentBarber.name || 'Barbero';
+            document.getElementById('perfilNombre').value = currentBarber.name || '';
+            document.getElementById('perfilEmail').value = currentUser.email || '';
+            document.getElementById('perfilTelefono').value = currentBarber.phone || '';
+            document.getElementById('perfilFoto').value = currentBarber.photo || '';
+
+            if (currentBarber.photo) {
+                document.getElementById('profileAvatar').innerHTML = `<img src="${currentBarber.photo}" alt="${currentBarber.name}">`;
+            }
+        }
+
+        async function savePerfil(e) {
+            e.preventDefault();
+            
+            const data = {
+                name: document.getElementById('perfilNombre').value,
+                phone: document.getElementById('perfilTelefono').value,
+                photo: document.getElementById('perfilFoto').value
+            };
+
+            try {
+                await db.collection('professionals').doc(currentBarber.id).update(data);
+                await db.collection('users').doc(currentUser.uid).update({ name: data.name });
+                
+                Object.assign(currentBarber, data);
+                renderProfile();
+                showNotification('Perfil actualizado', 'success');
+            } catch (error) {
+                showNotification('Error al guardar', 'error');
+            }
+        }
+
+        // Turnos
+        function updateStats() {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const weekEnd = new Date(now);
+            weekEnd.setDate(weekEnd.getDate() + 7);
+            const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+            const hoy = myAppointments.filter(t => t.dateObj >= now && t.dateObj < tomorrow && t.status !== 'cancelled').length;
+            const semana = myAppointments.filter(t => t.dateObj >= now && t.dateObj < weekEnd && t.status !== 'cancelled').length;
+            const mes = myAppointments.filter(t => t.dateObj >= now && t.dateObj <= monthEnd && t.status !== 'cancelled').length;
+
+            document.getElementById('statHoy').textContent = hoy;
+            document.getElementById('statSemana').textContent = semana;
+            document.getElementById('statMes').textContent = mes;
+        }
+
+        function renderTurnos() {
+            const filtro = document.getElementById('filtroEstado').value;
+            let filtered = [...myAppointments];
+            
+            if (filtro) {
+                filtered = filtered.filter(t => t.status === filtro);
+            }
+
+            const container = document.getElementById('turnosList');
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-times"></i><p>No hay turnos</p></div>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(t => `
+                <div class="turno-item">
+                    <div class="turno-time">${t.time}</div>
+                    <div class="turno-info">
+                        <h4>${t.serviceName}</h4>
+                        <p><i class="fas fa-user"></i> ${t.clientName || 'Cliente'}</p>
+                        ${t.clientPhone ? `<p><i class="fas fa-phone"></i> ${t.clientPhone}</p>` : ''}
+                        <p><i class="fas fa-calendar"></i> ${formatDate(t.dateObj)}</p>
+                    </div>
+                    <div class="turno-price">${formatPrice(t.servicePrice)}</div>
+                    <span class="status status--${t.status}">${t.status}</span>
+                    <div class="turno-actions">
+                        <button class="btn btn--dark" onclick="editarTurno('${t.id}')" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        ${t.status === 'pendiente' ? `
+                            <button class="btn btn--success" onclick="confirmarTurno('${t.id}')" title="Confirmar">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn btn--danger" onclick="cancelarTurno('${t.id}')" title="Cancelar">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        ` : ''}
+                        ${t.status === 'confirmado' ? `
+                            <button class="btn btn--primary" onclick="completarTurno('${t.id}')" title="Completar">
+                                <i class="fas fa-check-double"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.confirmarTurno = async function(id) {
+            await db.collection('appointments').doc(id).update({ status: 'confirmed' });
+            showNotification('Turno confirmado', 'success');
+            await loadData();
+            updateStats();
+        };
+
+        window.completarTurno = async function(id) {
+            await db.collection('appointments').doc(id).update({ status: 'completed' });
+            showNotification('Turno completado', 'success');
+            await loadData();
+            updateStats();
+        };
+
+        window.cancelarTurno = async function(id) {
+            if (!confirm('¿Cancelar este turno?')) return;
+            await db.collection('appointments').doc(id).update({ status: 'cancelled' });
+            showNotification('Turno cancelado', 'success');
+            await loadData();
+            updateStats();
+        };
+
+        // Editar turno
+        window.editarTurno = function(id) {
+            const turno = myAppointments.find(t => t.id === id);
+            if (!turno) return;
+
+            document.getElementById('editTurnoId').value = id;
+            document.getElementById('editClientName').value = turno.clientName || 'Cliente';
+            document.getElementById('editFecha').value = turno.dateObj.toISOString().split('T')[0];
+            document.getElementById('editHora').value = turno.time;
+            document.getElementById('editStatus').value = turno.status;
+
+            // Cargar servicios
+            const servicioSelect = document.getElementById('editService');
+            servicioSelect.innerHTML = allServices
+                .filter(s => myServices.includes(s.id))
+                .map(s => `<option value="${s.id}" ${s.id === turno.serviceId ? 'selected' : ''}>${s.name} - ${formatPrice(s.price)}</option>`)
+                .join('');
+
+            // Generar horarios disponibles
+            generarHorariosDisponibles(turno.dateObj, turno.time);
+
+            document.getElementById('editTurnoModal').classList.add('active');
+        };
+
+        function generarHorariosDisponibles(date, currentTime) {
+            const horaSelect = document.getElementById('editHora');
+            const schedule = currentBarber?.schedule || {};
+            const days = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+            const dayName = days[date.getDay()];
+            const daySchedule = schedule[dayName];
+
+            if (!daySchedule || !daySchedule.enabled) {
+                horaSelect.innerHTML = '<option value="">Día no disponible</option>';
+                return;
+            }
+
+            const slots = [];
+            const [openH, openM] = daySchedule.apertura.split(':').map(Number);
+            const [closeH, closeM] = daySchedule.cierre.split(':').map(Number);
+            let current = new Date(date);
+            current.setHours(openH, openM, 0, 0);
+            const close = new Date(date);
+            close.setHours(closeH, closeM, 0, 0);
+
+            while (current < close) {
+                const timeStr = current.toTimeString().slice(0, 5);
+                slots.push(timeStr);
+                current.setMinutes(current.getMinutes() + 30);
+            }
+
+            horaSelect.innerHTML = slots.map(t => `<option value="${t}" ${t === currentTime ? 'selected' : ''}>${t}</option>`).join('');
+        }
+
+        // Eventos del modal de edición
+        document.getElementById('closeEditModal').addEventListener('click', () => {
+            document.getElementById('editTurnoModal').classList.remove('active');
+        });
+
+        document.getElementById('editFecha').addEventListener('change', (e) => {
+            const fecha = new Date(e.target.value);
+            generarHorariosDisponibles(fecha, '09:00');
+        });
+
+        document.getElementById('editTurnoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('editTurnoId').value;
+            const serviceId = document.getElementById('editService').value;
+            const fecha = document.getElementById('editFecha').value;
+            const hora = document.getElementById('editHora').value;
+            const status = document.getElementById('editStatus').value;
+
+            const servicio = allServices.find(s => s.id === serviceId);
+
+            try {
+                await db.collection('appointments').doc(id).update({
+                    serviceId: serviceId,
+                    serviceName: servicio.name,
+                    servicePrice: servicio.price,
+                    date: firebase.firestore.Timestamp.fromDate(new Date(fecha)),
+                    time: hora,
+                    status: status
+                });
+
+                document.getElementById('editTurnoModal').classList.remove('active');
+                showNotification('Turno actualizado', 'success');
+                await loadData();
+                updateStats();
+            } catch (error) {
+                showNotification('Error al actualizar', 'error');
+            }
+        });
+
+        document.getElementById('btnDeleteTurno').addEventListener('click', async () => {
+            const id = document.getElementById('editTurnoId').value;
+            if (!confirm('¿Eliminar este turno?')) return;
+
+            try {
+                await db.collection('appointments').doc(id).delete();
+                document.getElementById('editTurnoModal').classList.remove('active');
+                showNotification('Turno eliminado', 'success');
+                await loadData();
+                updateStats();
+            } catch (error) {
+                showNotification('Error al eliminar', 'error');
+            }
+        });
+
+        // Horarios
+        function renderHorarios() {
+            const schedule = currentBarber?.schedule || {};
+            const dias = [
+                { key: 'lunes', label: 'Lunes' },
+                { key: 'martes', label: 'Martes' },
+                { key: 'miercoles', label: 'Miércoles' },
+                { key: 'jueves', label: 'Jueves' },
+                { key: 'viernes', label: 'Viernes' },
+                { key: 'sabado', label: 'Sábado' },
+                { key: 'domingo', label: 'Domingo' }
+            ];
+
+            const container = document.getElementById('horariosConfig');
+            container.innerHTML = dias.map(dia => {
+                const config = schedule[dia.key] || { enabled: false, apertura: '09:00', cierre: '20:30' };
+                return `
+                    <div class="horario-row">
+                        <label>${dia.label}</label>
+                        <input type="time" class="horario-apertura" data-dia="${dia.key}" value="${config.apertura}" ${!config.enabled ? 'disabled' : ''}>
+                        <span>a</span>
+                        <input type="time" class="horario-cierre" data-dia="${dia.key}" value="${config.cierre}" ${!config.enabled ? 'disabled' : ''}>
+                        <div class="horario-toggle">
+                            <input type="checkbox" class="horario-enabled" data-dia="${dia.key}" ${config.enabled ? 'checked' : ''}>
+                            <span>${config.enabled ? 'Activo' : 'Inactivo'}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Event listeners
+            container.querySelectorAll('.horario-enabled').forEach(toggle => {
+                toggle.addEventListener('change', (e) => {
+                    const row = e.target.closest('.horario-row');
+                    const inputs = row.querySelectorAll('input[type="time"]');
+                    const label = row.querySelector('.horario-toggle span');
+                    
+                    inputs.forEach(input => input.disabled = !e.target.checked);
+                    label.textContent = e.target.checked ? 'Activo' : 'Inactivo';
+                });
+            });
+        }
+
+        async function saveHorarios() {
+            const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+            const schedule = {};
+
+            dias.forEach(dia => {
+                const row = document.querySelector(`.horario-enabled[data-dia="${dia}"]`).closest('.horario-row');
+                const enabled = document.querySelector(`.horario-enabled[data-dia="${dia}"]`).checked;
+
+                schedule[dia] = {
+                    enabled,
+                    apertura: row.querySelector('.horario-apertura').value,
+                    cierre: row.querySelector('.horario-cierre').value
+                };
+            });
+
+            try {
+                await db.collection('professionals').doc(currentBarber.id).update({ schedule });
+                showNotification('Horarios guardados', 'success');
+            } catch (error) {
+                showNotification('Error al guardar', 'error');
+            }
+        }
+
+        // Servicios
+        function renderServicios() {
+            const container = document.getElementById('serviciosGrid');
+            container.innerHTML = allServices.map(s => `
+                <div class="servicio-item ${myServices.includes(s.id) ? 'selected' : ''}" data-id="${s.id}">
+                    <input type="checkbox" ${myServices.includes(s.id) ? 'checked' : ''}>
+                    <div class="servicio-item__info">
+                        <div class="servicio-item__name">${s.name}</div>
+                        <div class="servicio-item__price">${formatPrice(s.price)} · ${s.duration}min</div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Click handler
+            container.querySelectorAll('.servicio-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    if (e.target.type === 'checkbox') return;
+                    const checkbox = item.querySelector('input[type="checkbox"]');
+                    checkbox.checked = !checkbox.checked;
+                    item.classList.toggle('selected', checkbox.checked);
+                });
+            });
+        }
+
+        async function saveServicios() {
+            const selected = Array.from(document.querySelectorAll('#serviciosGrid input:checked'))
+                .map(cb => cb.closest('.servicio-item').dataset.id);
+
+            try {
+                await db.collection('professionals').doc(currentBarber.id).update({ services: selected });
+                myServices = selected;
+                showNotification('Servicios guardados', 'success');
+            } catch (error) {
+                showNotification('Error al guardar', 'error');
+            }
+        }
+
+        // Utilities
+        function formatPrice(price) {
+            return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(price);
+        }
+
+        function formatDate(date) {
+            return new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'long' }).format(date);
+        }
+
+        function showNotification(message, type = 'info') {
+            const n = document.createElement('div');
+            n.className = `notification notification--${type}`;
+            n.textContent = message;
+            document.body.appendChild(n);
+            setTimeout(() => n.classList.add('show'), 10);
+            setTimeout(() => {
+                n.classList.remove('show');
+                setTimeout(() => n.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

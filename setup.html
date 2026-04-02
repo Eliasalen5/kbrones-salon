@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración Inicial - Kbrones Salon</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body class="setup-page">
+    <div class="setup-container">
+        <div class="auth-logo">
+            <h1>Kbrones Salon</h1>
+            <p>Configuración inicial del sistema</p>
+        </div>
+        
+        <div class="setup-info">
+            <i class="fas fa-info-circle"></i>
+            Esta es la configuración inicial. Completá los datos del dueño del local y la información del barbería.
+        </div>
+        
+        <div id="message" class="message" style="display: none;"></div>
+        
+        <div class="setup-section">
+            <h3><i class="fas fa-store"></i> Información del Local</h3>
+            <div class="form-group">
+                <label>Nombre del Local</label>
+                <input type="text" id="shopName" value="Kbrones Salon" placeholder="Nombre de tu barbería">
+            </div>
+            <div class="form-group">
+                <label>Dirección</label>
+                <input type="text" id="shopAddress" value="Laprida 1268, Baradero, Buenos Aires" placeholder="Dirección del local">
+            </div>
+            <div class="form-group">
+                <label>Teléfono</label>
+                <input type="tel" id="shopPhone" value="+54 3329 618070" placeholder="Teléfono de contacto">
+            </div>
+        </div>
+        
+        <form id="setupForm" class="setup-form">
+            <h3 class="setup-form-title"><i class="fas fa-user-tie"></i> Datos del Dueño</h3>
+            
+            <div class="form-group">
+                <label>Tu Nombre</label>
+                <input type="text" id="name" placeholder="Tu nombre completo" required>
+            </div>
+            <div class="form-group">
+                <label>Tu Email (será tu usuario)</label>
+                <input type="email" id="email" placeholder="tu@email.com" required>
+            </div>
+            <div class="form-group">
+                <label>Contraseña (mín. 6 caracteres)</label>
+                <input type="password" id="password" placeholder="Contraseña segura" minlength="6" required>
+            </div>
+            <div class="form-group">
+                <label>Tu Teléfono</label>
+                <input type="tel" id="phone" placeholder="+54 3329 XXXXXX">
+            </div>
+            
+            <button type="submit" id="btnSubmit" class="btn btn--primary btn--block btn--lg">
+                <span id="btnText">Configurar y Crear Cuenta</span>
+            </button>
+        </form>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCd4HqPGMtiR0bHJD8GEozhfNl3-MG2tiw",
+            authDomain: "kbrones-salon-1997.firebaseapp.com",
+            projectId: "kbrones-salon-1997",
+            storageBucket: "kbrones-salon-1997.firebasestorage.app",
+            messagingSenderId: "335118146301",
+            appId: "1:335118146301:web:85aa85bd9ee97278d03c94",
+            measurementId: "G-9BCLJ9N9Q5"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        document.getElementById('setupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const shopName = document.getElementById('shopName').value;
+            const shopAddress = document.getElementById('shopAddress').value;
+            const shopPhone = document.getElementById('shopPhone').value;
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const phone = document.getElementById('phone').value;
+            
+            const btn = document.getElementById('btnSubmit');
+            const btnText = document.getElementById('btnText');
+            const message = document.getElementById('message');
+            
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span> Configurando...';
+            message.style.display = 'none';
+            
+            try {
+                // 1. Crear usuario en Firebase Auth
+                const credential = await auth.createUserWithEmailAndPassword(email, password);
+                await credential.user.updateProfile({ displayName: name });
+                
+                // 2. Guardar info del dueño
+                await db.collection('users').doc(credential.user.uid).set({
+                    name: name,
+                    email: email,
+                    phone: phone || '',
+                    role: 'owner',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // 3. Guardar configuración del local
+                await db.collection('config').doc('barbershop').set({
+                    name: shopName,
+                    address: shopAddress,
+                    phone: shopPhone,
+                    ownerId: credential.user.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // 4. Crear horarios por defecto
+                await db.collection('config').doc('horarios').set({
+                    lunes: { enabled: true, apertura: '09:00', cierre: '20:30', pausa: { enabled: true, inicio: '11:30', fin: '17:00' } },
+                    martes: { enabled: true, apertura: '09:00', cierre: '20:30', pausa: { enabled: true, inicio: '11:30', fin: '17:00' } },
+                    miercoles: { enabled: true, apertura: '09:00', cierre: '20:30', pausa: { enabled: true, inicio: '11:30', fin: '17:00' } },
+                    jueves: { enabled: true, apertura: '09:00', cierre: '12:00', pausa: { enabled: false } },
+                    viernes: { enabled: true, apertura: '09:00', cierre: '20:30', pausa: { enabled: true, inicio: '11:30', fin: '17:00' } },
+                    sabado: { enabled: true, apertura: '09:00', cierre: '12:00', pausa: { enabled: false } },
+                    domingo: { enabled: false }
+                });
+                
+                // 5. Crear servicios por defecto
+                const serviciosDefault = [
+                    { name: 'Corte Masculino', price: 19000, duration: 30, category: 'barberia' },
+                    { name: 'Arreglo de Barba', price: 10000, duration: 30, category: 'barberia' },
+                    { name: 'Combo Corte + Barba', price: 22000, duration: 60, category: 'barberia' },
+                    { name: 'Combo Corte + Barba + Cejas', price: 25000, duration: 60, category: 'barberia' },
+                    { name: 'Combo Corte + Cejas', price: 20000, duration: 45, category: 'barberia' },
+                    { name: 'Diseño de Ligneada', price: 8000, duration: 20, category: 'barberia' },
+                    { name: 'Lavado de Cabello', price: 5000, duration: 15, category: 'tratamientos' }
+                ];
+                
+                for (const servicio of serviciosDefault) {
+                    await db.collection('services').add(servicio);
+                }
+                
+                message.innerHTML = '<i class="fas fa-check-circle"></i> ¡Configuración completada! Redirigiendo...';
+                message.className = 'message success';
+                message.style.display = 'block';
+                
+                setTimeout(() => {
+                    window.location.href = 'panel-dueno.html';
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                let msg = 'Error al configurar';
+                
+                if (error.code === 'auth/email-already-in-use') {
+                    msg = 'Este email ya está registrado';
+                } else if (error.code === 'auth/weak-password') {
+                    msg = 'La contraseña debe tener al menos 6 caracteres';
+                } else if (error.code === 'auth/network-request-failed') {
+                    msg = 'Error de conexión. Verificá tu internet.';
+                }
+                
+                message.textContent = msg;
+                message.className = 'message error';
+                message.style.display = 'block';
+                
+                btn.disabled = false;
+                btnText.textContent = 'Configurar y Crear Cuenta';
+            }
+        });
+    </script>
+</body>
+</html>

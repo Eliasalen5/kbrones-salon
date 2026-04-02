@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kbrones Salon - Reserva tu Turno</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header__container container">
+            <a href="index.html" class="header__logo">
+                <img src="assets/images/logo.png" alt="Kbrones Salon" class="header__logo-img">
+                <span class="header__brand">Kbrones Salon</span>
+            </a>
+            <nav class="header__nav" id="navMenu">
+                <a href="#servicios" class="header__link">Servicios</a>
+                <a href="#profesionales" class="header__link">Profesionales</a>
+                <a href="#contacto" class="header__link">Contacto</a>
+                <div class="nav__auth" id="navAuth">
+                    <button class="btn btn--outline btn--sm" id="loginBtn">Iniciar Sesión</button>
+                    <button class="btn btn--primary btn--sm" id="registerBtn">Registrarse</button>
+                </div>
+                <div class="nav__user" id="navUser" style="display: none;">
+                    <button class="btn btn--outline btn--sm" id="misTurnosBtn">
+                        <i class="fas fa-calendar"></i> Mis Turnos
+                    </button>
+                    <button class="btn btn--danger btn--sm" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Cerrar
+                    </button>
+                </div>
+            </nav>
+            <button class="header__toggle" id="navToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="hero">
+            <div class="hero__content container">
+                <h1 class="hero__title">Tu estilo, nuestra pasión</h1>
+                <p class="hero__subtitle">Reserve su turno en Kbrones Salon, Baradero</p>
+                <a href="#profesionales" class="btn btn--primary btn--lg">Elegir Profesional</a>
+            </div>
+        </section>
+
+        <section class="servicios" id="servicios">
+            <div class="container">
+                <h2 class="section__title">Nuestros Servicios</h2>
+                <div class="servicios__grid" id="serviciosGrid"></div>
+            </div>
+        </section>
+
+        <section class="profesionales" id="profesionales">
+            <div class="container">
+                <h2 class="section__title">Nuestros Profesionales</h2>
+                <p class="profesionales__subtitle">Seleccioná tu profesional para reservar tu turno</p>
+                <div class="profesionales__grid" id="profesionalesGrid"></div>
+            </div>
+        </section>
+
+        <section class="reserva-profesional" id="reserva">
+            <div class="container">
+                <button class="btn-volver" id="btnVolverProfesionales">
+                    <i class="fas fa-arrow-left"></i> Volver a Profesionales
+                </button>
+                
+                <div class="reserva-content" id="reservaContent">
+                    <div class="reserva-header" id="reservaHeader"></div>
+                    
+                    <div class="reserva-body">
+                        <div class="reserva-servicios">
+                            <h3><i class="fas fa-cut"></i> Seleccioná tu Servicio</h3>
+                            <div class="servicios-disponibles" id="serviciosDisponibles"></div>
+                        </div>
+
+                        <div class="reserva-fecha">
+                            <h3><i class="fas fa-calendar"></i> Seleccioná Fecha</h3>
+                            <input type="date" id="fechaTurno" class="calendario-input">
+                            <div class="horarios-disponibles" id="horariosDisponibles"></div>
+                        </div>
+                    </div>
+
+                    <div class="reserva-resumen" id="reservaResumen">
+                        <h3>Resumen de tu Turno</h3>
+                        <div class="resumen-detalle" id="resumenDetalle"></div>
+                        <div class="resumen-pago">
+                            <h4>Método de Pago</h4>
+                            <div class="pago-opciones">
+                                <label class="pago-opcion selected">
+                                    <input type="radio" name="pago" value="mercadopago" checked>
+                                    <i class="fab fa-cc-mastercard"></i>
+                                    MercadoPago
+                                </label>
+                                <label class="pago-opcion">
+                                    <input type="radio" name="pago" value="tarjeta">
+                                    <i class="fas fa-credit-card"></i>
+                                    Tarjeta D/C
+                                </label>
+                            </div>
+                        </div>
+                        <button class="btn btn--primary btn--block btn--lg" id="btnReservar">
+                            <i class="fas fa-check"></i> Confirmar Turno
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="horarios" id="horarios">
+            <div class="container">
+                <h2 class="section__title">Horarios de Atención</h2>
+                <div class="horarios__info" id="horariosInfo"></div>
+            </div>
+        </section>
+
+        <section class="contacto" id="contacto">
+            <div class="container">
+                <h2 class="section__title">Contacto</h2>
+                <div class="contacto__info">
+                    <div class="contacto-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <p>Laprida 1268, Baradero, Buenos Aires</p>
+                    </div>
+                    <div class="contacto-item">
+                        <i class="fab fa-whatsapp"></i>
+                        <a href="https://wa.me/543329618070" target="_blank">+54 3329 618070</a>
+                    </div>
+                    <div class="contacto-item">
+                        <i class="fab fa-instagram"></i>
+                        <a href="https://www.instagram.com/kbrones_salon/" target="_blank">@kbrones_salon</a>
+                    </div>
+                    <div class="contacto-item">
+                        <i class="fab fa-facebook"></i>
+                        <a href="https://www.facebook.com/Jbergerbarber" target="_blank">Jbergerbarber</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <div class="footer__brand">
+                    <h3>Kbrones Salon</h3>
+                    <p>Tu estilo, nuestra pasión</p>
+                </div>
+                <div class="footer__links">
+                    <a href="#servicios">Servicios</a>
+                    <a href="#profesionales">Profesionales</a>
+                    <a href="#contacto">Contacto</a>
+                </div>
+                <div class="footer__social">
+                    <a href="https://www.instagram.com/kbrones_salon/" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.facebook.com/Jbergerbarber" target="_blank"><i class="fab fa-facebook"></i></a>
+                    <a href="https://wa.me/543329618070" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <div class="footer__copy">
+                <p>&copy; 2026 Kbrones Salon. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <div class="modal" id="authModal">
+        <div class="modal__content">
+            <button class="modal__close" id="closeModal">&times;</button>
+            <div class="modal__tabs">
+                <button class="modal__tab active" data-tab="login">Iniciar Sesión</button>
+                <button class="modal__tab" data-tab="register">Registrarse</button>
+            </div>
+            <form class="auth-form" id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Contraseña</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn--primary btn--block">Iniciar Sesión</button>
+                <button type="button" class="btn btn--google" id="googleLogin">
+                    <i class="fab fa-google"></i> Continuar con Google
+                </button>
+            </form>
+            <form class="auth-form" id="registerForm" style="display: none;">
+                <div class="form-group">
+                    <label for="registerName">Nombre completo</label>
+                    <input type="text" id="registerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPhone">Teléfono</label>
+                    <input type="tel" id="registerPhone" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Contraseña</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <button type="submit" class="btn btn--primary btn--block">Crear Cuenta</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="turnoModal">
+        <div class="modal__content modal__content--small">
+            <button class="modal__close" id="closeTurnoModal">&times;</button>
+            <div class="turno-confirmado">
+                <i class="fas fa-check-circle"></i>
+                <h3>¡Turno Reservado!</h3>
+                <p>Te esperamos, ¡hasta pronto!</p>
+                <div id="turnoDetalles"></div>
+                <button class="btn btn--primary btn--block" onclick="closeTurnoModal(); location.reload();">
+                    Aceptar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/app.js"></script>
+</body>
+</html>

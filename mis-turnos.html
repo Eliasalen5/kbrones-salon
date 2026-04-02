@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Turnos - Kbrones Salon</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body class="mis-turnos-body">
+    <header class="header">
+        <div class="header__container container">
+            <a href="index.html" class="header__logo">
+                <img src="assets/images/logo.png" alt="Kbrones Salon" class="header__logo-img">
+            </a>
+            <span class="header__brand">Kbrones Salon</span>
+            <nav class="header__nav" id="navMenu">
+                <a href="index.html" class="header__link">Inicio</a>
+                <a href="index.html#servicios" class="header__link">Servicios</a>
+                <a href="index.html#profesionales" class="header__link">Profesionales</a>
+                <a href="mis-turnos.html" class="header__link active">Mis Turnos</a>
+            </nav>
+            <div class="header__auth">
+                <button class="btn btn--outline btn--sm" id="logoutBtn">Cerrar Sesión</button>
+            </div>
+            <button class="header__toggle" id="navToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="mis-turnos-main">
+        <div class="container">
+            <h1 class="page-title">Mis Turnos</h1>
+            
+            <div class="mis-turnos-content">
+                <div class="turnos-filtros">
+                    <button class="filtro-btn active" data-filtro="todos">Todos</button>
+                    <button class="filtro-btn" data-filtro="proximos">Próximos</button>
+                    <button class="filtro-btn" data-filtro="completados">Completados</button>
+                    <button class="filtro-btn" data-filtro="cancelados">Cancelados</button>
+                </div>
+
+                <div class="turnos-lista" id="turnosLista">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Cargando tus turnos...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal" id="turnoModal">
+        <div class="modal__content">
+            <button class="modal__close" id="closeModal">&times;</button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="assets/js/firebase-config.js"></script>
+    <script>
+        let currentUser = null;
+        let misTurnos = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('Mis turnos cargando...');
+            
+            auth.onAuthStateChanged(async (user) => {
+                console.log('Auth state changed:', user ? user.uid : 'no user');
+                
+                if (!user) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                currentUser = user;
+                console.log('Cargando turnos para:', user.uid);
+                await loadMisTurnos();
+                console.log('Turnos cargados:', misTurnos.length);
+            });
+
+            document.getElementById('logoutBtn').addEventListener('click', async () => {
+                await auth.signOut();
+                window.location.href = 'index.html';
+            });
+
+            document.getElementById('closeModal').addEventListener('click', () => {
+                document.getElementById('turnoModal').classList.remove('active');
+            });
+
+            document.querySelectorAll('.filtro-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    renderTurnos(btn.dataset.filtro);
+                });
+            });
+
+            // Mobile menu
+            const navToggle = document.getElementById('navToggle');
+            const navMenu = document.getElementById('navMenu');
+            if (navToggle && navMenu) {
+                navToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
+            }
+        });
+
+        async function loadMisTurnos() {
+            try {
+                const snapshot = await db.collection('appointments')
+                    .where('clientId', '==', currentUser.uid)
+                    .get();
+
+                misTurnos = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ...data,
+                        dateObj: data.date ? data.date.toDate() : new Date()
+                    };
+                });
+
+                // Ordenar por fecha descendente
+                misTurnos.sort((a, b) => b.dateObj - a.dateObj);
+
+                renderTurnos('todos');
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('turnosLista').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Error al cargar turnos</p>
+                        <p style="font-size: 0.8rem; margin-top: 10px;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderTurnos(filtro) {
+            const container = document.getElementById('turnosLista');
+            const ahora = new Date();
+
+            let filtered = misTurnos;
+
+            if (filtro === 'proximos') {
+                filtered = misTurnos.filter(t => 
+                    (t.status === 'confirmado' || t.status === 'pendiente') && 
+                    t.dateObj >= ahora
+                );
+            } else if (filtro === 'completados') {
+                filtered = misTurnos.filter(t => t.status === 'completado');
+            } else if (filtro === 'cancelados') {
+                filtered = misTurnos.filter(t => t.status === 'cancelado');
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <h3>No tenés turnos</h3>
+                        <p>${filtro === 'todos' ? 'Aún no tienes turnos reservados' : 'No hay turnos en esta categoría'}</p>
+                        <a href="index.html#profesionales" class="btn btn--primary">Reservar Turno</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Agrupar por fecha
+            const grouped = {};
+            filtered.forEach(apt => {
+                const dateKey = apt.dateObj.toDateString();
+                if (!grouped[dateKey]) grouped[dateKey] = [];
+                grouped[dateKey].push(apt);
+            });
+
+            container.innerHTML = Object.entries(grouped).map(([date, turnos]) => `
+                <div class="turnos-group">
+                    <h3 class="turnos-group__title">
+                        <i class="fas fa-calendar"></i>
+                        ${formatDateComplete(new Date(date))}
+                    </h3>
+                    <div class="turnos-group__lista">
+                        ${turnos.map(apt => renderTurnoCard(apt)).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            // Eventos
+            container.querySelectorAll('.turno-card').forEach(card => {
+                card.addEventListener('click', () => verDetalleTurno(card.dataset.id));
+            });
+        }
+
+        function renderTurnoCard(apt) {
+            const statusConfig = {
+                pendiente: { class: 'status--warning', icon: 'clock', text: 'Pendiente' },
+                confirmado: { class: 'status--success', icon: 'check', text: 'Confirmado' },
+                completado: { class: 'status--info', icon: 'check-double', text: 'Completado' },
+                cancelado: { class: 'status--danger', icon: 'times', text: 'Cancelado' }
+            };
+            const status = statusConfig[apt.status] || statusConfig.pendiente;
+
+            return `
+                <div class="turno-card" data-id="${apt.id}">
+                    <div class="turno-card__time">${apt.time}</div>
+                    <div class="turno-card__info">
+                        <h4>${apt.serviceName}</h4>
+                        <p><i class="fas fa-user"></i> ${apt.professionalName}</p>
+                    </div>
+                    <div class="turno-card__price">${formatPrice(apt.servicePrice)}</div>
+                    <div class="turno-card__status">
+                        <span class="status ${status.class}">
+                            <i class="fas fa-${status.icon}"></i> ${status.text}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function verDetalleTurno(id) {
+            const apt = misTurnos.find(t => t.id === id);
+            if (!apt) return;
+
+            const statusConfig = {
+                pendiente: 'Pendiente',
+                confirmado: 'Confirmado',
+                completado: 'Completado',
+                cancelado: 'Cancelado'
+            };
+
+            document.getElementById('modalContent').innerHTML = `
+                <h3>Detalle del Turno</h3>
+                <div class="detalle-turno">
+                    <div class="detalle-row">
+                        <span>Fecha</span>
+                        <span>${formatDateComplete(apt.dateObj)}</span>
+                    </div>
+                    <div class="detalle-row">
+                        <span>Hora</span>
+                        <span>${apt.time}</span>
+                    </div>
+                    <div class="detalle-row">
+                        <span>Servicio</span>
+                        <span>${apt.serviceName}</span>
+                    </div>
+                    <div class="detalle-row">
+                        <span>Barbero</span>
+                        <span>${apt.professionalName}</span>
+                    </div>
+                    <div class="detalle-row">
+                        <span>Precio</span>
+                        <span>${formatPrice(apt.servicePrice)}</span>
+                    </div>
+                    <div class="detalle-row">
+                        <span>Estado</span>
+                        <span>${statusConfig[apt.status]}</span>
+                    </div>
+                    <div class="detalle-row">
+                        <span>Pago</span>
+                        <span>${apt.paymentStatus === 'approved' ? 'Pagado ✓' : 'Pendiente'}</span>
+                    </div>
+                </div>
+                ${apt.status !== 'cancelado' && apt.status !== 'completado' ? `
+                    <button class="btn btn--danger btn--block" onclick="cancelarTurno('${apt.id}')">
+                        <i class="fas fa-times"></i> Cancelar Turno
+                    </button>
+                ` : ''}
+            `;
+            document.getElementById('turnoModal').classList.add('active');
+        }
+
+        async function cancelarTurno(id) {
+            if (!confirm('¿Estás seguro de cancelar este turno?')) return;
+            try {
+                await db.collection('appointments').doc(id).update({ status: 'cancelado' });
+                document.getElementById('turnoModal').classList.remove('active');
+                await loadMisTurnos();
+                showNotification('Turno cancelado', 'success');
+            } catch (error) {
+                showNotification('Error al cancelar', 'error');
+            }
+        }
+
+        function formatDateComplete(date) {
+            return new Intl.DateTimeFormat('es-AR', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long'
+            }).format(date);
+        }
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('es-AR', {
+                style: 'currency',
+                currency: 'ARS'
+            }).format(price);
+        }
+
+        function showNotification(message, type = 'info') {
+            const n = document.createElement('div');
+            n.className = `notification notification--${type}`;
+            n.textContent = message;
+            document.body.appendChild(n);
+            setTimeout(() => n.classList.add('show'), 10);
+            setTimeout(() => {
+                n.classList.remove('show');
+                document.body.removeChild(n);
+            }, 3000);
+        }
+
+        window.cancelarTurno = cancelarTurno;
+    </script>
+</body>
+</html>

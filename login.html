@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Kbrones Salon</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-logo">
+            <h1>Kbrones Salon</h1>
+            <p>Ingreso para administradores</p>
+        </div>
+        
+        <div class="role-badge">
+            <i class="fas fa-user-shield"></i> Panel del Dueño
+        </div>
+        
+        <div id="message" class="message" style="display: none;"></div>
+        
+        <form id="loginForm" class="auth-form">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="tu@email.com" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" placeholder="Tu contraseña" required>
+            </div>
+            <button type="submit" id="btnLogin" class="btn btn--primary btn--block btn--lg">
+                <span id="btnText">Iniciar Sesión</span>
+            </button>
+        </form>
+        
+        <div class="auth-links">
+            <a href="index.html">
+                <i class="fas fa-arrow-left"></i> Volver al inicio
+            </a>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCd4HqPGMtiR0bHJD8GEozhfNl3-MG2tiw",
+            authDomain: "kbrones-salon-1997.firebaseapp.com",
+            projectId: "kbrones-salon-1997",
+            storageBucket: "kbrones-salon-1997.firebasestorage.app",
+            messagingSenderId: "335118146301",
+            appId: "1:335118146301:web:85aa85bd9ee97278d03c94",
+            measurementId: "G-9BCLJ9N9Q5"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('btnLogin');
+            const btnText = document.getElementById('btnText');
+            const message = document.getElementById('message');
+            
+            btn.disabled = true;
+            btnText.textContent = 'Ingresando...';
+            message.style.display = 'none';
+            
+            try {
+                const credential = await auth.signInWithEmailAndPassword(email, password);
+                console.log('Login exitoso:', credential.user.uid);
+                
+                const userDoc = await db.collection('users').doc(credential.user.uid).get();
+                const role = userDoc.exists ? userDoc.data().role : null;
+                console.log('Rol:', role);
+                
+                if (role === 'owner') {
+                    window.location.href = 'panel-dueno.html';
+                } else if (role === 'barber') {
+                    window.location.href = 'panel-barbero.html';
+                } else {
+                    await auth.signOut();
+                    message.textContent = 'No tenés acceso a este panel';
+                    message.className = 'message error';
+                    message.style.display = 'block';
+                    btn.disabled = false;
+                    btnText.textContent = 'Iniciar Sesión';
+                    return;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                let msg = 'Error al iniciar sesión';
+                
+                if (error.code === 'auth/user-not-found') {
+                    msg = 'No existe cuenta con este email';
+                } else if (error.code === 'auth/wrong-password') {
+                    msg = 'Contraseña incorrecta';
+                } else if (error.code === 'auth/invalid-email') {
+                    msg = 'Email inválido';
+                } else if (error.code === 'auth/too-many-requests') {
+                    msg = 'Demasiados intentos. Probá más tarde.';
+                }
+                
+                message.textContent = msg;
+                message.className = 'message error';
+                message.style.display = 'block';
+            }
+            
+            btn.disabled = false;
+            btnText.textContent = 'Iniciar Sesión';
+        });
+    </script>
+</body>
+</html>
