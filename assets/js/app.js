@@ -26,6 +26,71 @@ async function initApp() {
     renderServicios();
     renderProfesionales();
     renderHorarios();
+    loadPromociones();
+    initGaleria();
+}
+
+// Carrusel del Hero
+let currentSlide = 0;
+let slideInterval;
+
+function initGaleria() {
+    const slides = document.querySelectorAll('.hero__slide');
+    const dotsContainer = document.getElementById('heroDots');
+    const prevBtn = document.getElementById('heroPrev');
+    const nextBtn = document.getElementById('heroNext');
+    
+    if (!slides.length) return;
+    
+    const totalSlides = slides.length;
+    
+    // Crear dots
+    for (let i = 0; i < totalSlides; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'hero__dot' + (i === 0 ? ' active' : '');
+        dot.addEventListener('click', () => goToSlide(i));
+        dotsContainer.appendChild(dot);
+    }
+    
+    // Event listeners
+    if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+    if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+    
+    // Auto-play
+    startAutoPlay();
+}
+
+function goToSlide(index) {
+    const slides = document.querySelectorAll('.hero__slide');
+    const dots = document.querySelectorAll('.hero__dot');
+    const totalSlides = slides.length;
+    
+    slides[currentSlide].classList.remove('active');
+    dots[currentSlide].classList.remove('active');
+    
+    currentSlide = (index + totalSlides) % totalSlides;
+    
+    slides[currentSlide].classList.add('active');
+    dots[currentSlide].classList.add('active');
+}
+
+function nextSlide() {
+    goToSlide(currentSlide + 1);
+    resetAutoPlay();
+}
+
+function prevSlide() {
+    goToSlide(currentSlide - 1);
+    resetAutoPlay();
+}
+
+function startAutoPlay() {
+    slideInterval = setInterval(nextSlide, 5000);
+}
+
+function resetAutoPlay() {
+    clearInterval(slideInterval);
+    startAutoPlay();
 }
 
 function setupEventListeners() {
@@ -370,8 +435,16 @@ function getDefaultServices() {
 
 async function loadProfesionales() {
     try {
-        const snapshot = await db.collection('professionals').get();
-        profesionales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Cargar barberos
+        const barbersSnapshot = await db.collection('users').where('role', '==', 'barber').get();
+        let barbers = barbersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Cargar dueño
+        const ownersSnapshot = await db.collection('users').where('role', '==', 'owner').get();
+        let owners = ownersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Combinar barberos y dueños
+        profesionales = [...owners, ...barbers];
         
         if (profesionales.length === 0) {
             profesionales = getDefaultProfessionals();
@@ -385,12 +458,90 @@ function getDefaultProfessionals() {
     return [];
 }
 
+// Promociones
+let promociones = [];
+
+async function loadPromociones() {
+    try {
+        const snapshot = await db.collection('promotions').where('active', '==', true).get();
+        promociones = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderPromociones();
+    } catch (error) {
+        console.error('Error cargando promociones:', error);
+        const container = document.getElementById('promocionesGrid');
+        if (container) {
+            container.innerHTML = '<p style="text-align:center;color:#666;">No hay promociones disponibles</p>';
+        }
+    }
+}
+
+function renderPromociones() {
+    const container = document.getElementById('promocionesGrid');
+    if (!container) return;
+
+    if (promociones.length === 0) {
+        container.innerHTML = '<p style="text-align:center;color:#666;">No hay promociones disponibles</p>';
+        return;
+    }
+
+    container.innerHTML = promociones.map(p => `
+        <div class="promocion-card" onclick="reservarPromocion('${p.id}')">
+            <div class="promocion-card__image">
+                <i class="fas fa-gift"></i>
+            </div>
+            <div class="promocion-card__content">
+                <h3 class="promocion-card__title">${p.title}</h3>
+                <p class="promocion-card__description">${p.description}</p>
+                <div class="promocion-card__price">
+                    ${p.oldPrice ? `<span class="old-price">${formatPrice(p.oldPrice)}</span>` : ''}
+                    <span class="new-price">${formatPrice(p.price)}</span>
+                </div>
+                <div class="promocion-card__footer">
+                    <span class="promocion-card__validity">
+                        <i class="fas fa-clock"></i> Válido hasta ${formatDateShort(p.validUntil)}
+                    </span>
+                    <button class="btn btn--primary btn--sm">
+                        <i class="fas fa-calendar-check"></i> Reservar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+window.reservarPromocion = function(promocionId) {
+    const promo = promociones.find(p => p.id === promocionId);
+    if (!promo) return;
+    
+    // Guardar la promoción seleccionada
+    sessionStorage.setItem('promocionSeleccionada', JSON.stringify(promo));
+    
+    // Ir a la sección de profesionales
+    document.getElementById('profesionales').scrollIntoView({ behavior: 'smooth' });
+};
+
+function formatDateShort(date) {
+    if (!date) return '';
+    let d;
+    if (typeof date === 'string') {
+        // Agregar hora para evitar problemas de zona horaria
+        const [year, month, day] = date.split('-');
+        d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    } else if (date.toDate) {
+        d = date.toDate();
+    } else {
+        d = new Date(date);
+    }
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
+}
+
 function renderServicios() {
     const container = document.getElementById('serviciosGrid');
     if (!container) return;
 
     container.innerHTML = servicios.slice(0, 4).map(s => `
-        <div class="servicio-card">
+        <div class="servicio-card" onclick="reservarServicio('${s.id}')">
             <i class="fas fa-cut"></i>
             <h3>${s.name}</h3>
             <p class="precio">${formatPrice(s.price)}</p>
@@ -398,6 +549,15 @@ function renderServicios() {
         </div>
     `).join('');
 }
+
+window.reservarServicio = function(servicioId) {
+    const servicio = servicios.find(s => s.id === servicioId);
+    if (!servicio) return;
+    
+    sessionStorage.setItem('servicioSeleccionado', JSON.stringify(servicio));
+    
+    document.getElementById('profesionales').scrollIntoView({ behavior: 'smooth' });
+};
 
 function renderProfesionales() {
     const container = document.getElementById('profesionalesGrid');
@@ -469,64 +629,78 @@ function renderHorarios() {
 
 // Seleccionar barbero y mostrar reserva
 async function selectBarbero(barberId, barberName, barberPhoto) {
+    const promoData = sessionStorage.getItem('promocionSeleccionada');
+    const promocionSeleccionada = promoData ? JSON.parse(promoData) : null;
+    
+    const servicioData = sessionStorage.getItem('servicioSeleccionado');
+    const servicioSeleccionado = servicioData ? JSON.parse(servicioData) : null;
+    
     turnoActual = {
         barberId: barberId,
         barberName: barberName,
-        servicio: null,
+        servicio: servicioSeleccionado,
         fecha: null,
-        hora: null
+        hora: null,
+        promocion: promocionSeleccionada
     };
 
-    // Cargar horarios del barbero
     await loadBarberSchedule(barberId);
     
-
-    // Mostrar sección de reserva
     document.getElementById('reserva').classList.add('active');
     
-    // Renderizar header del barbero
     const header = document.getElementById('reservaHeader');
+    let headerSubtitle = 'Seleccioná tu servicio y horario';
+    if (promocionSeleccionada) {
+        headerSubtitle = `<span class="promo-badge"><i class="fas fa-gift"></i> ${promocionSeleccionada.title}</span>`;
+    } else if (servicioSeleccionado) {
+        headerSubtitle = servicioSeleccionado.name;
+    }
+    
     header.innerHTML = `
         <div class="reserva-header__avatar">
             ${barberPhoto ? `<img src="${barberPhoto}" alt="${barberName}">` : '<i class="fas fa-user"></i>'}
         </div>
         <div class="reserva-header__info">
             <h2>${barberName}</h2>
-            <p>Seleccioná tu servicio y horario</p>
+            <p>${headerSubtitle}</p>
         </div>
     `;
 
-    // Obtener servicios del barbero
-    const barber = profesionales.find(p => p.id === barberId);
-    const barberServices = barber && barber.services 
-        ? servicios.filter(s => barber.services.includes(s.id))
-        : servicios;
+    const serviciosSection = document.getElementById('serviciosSection');
+    
+    if (promocionSeleccionada || servicioSeleccionado) {
+        serviciosSection.style.display = 'none';
+        updateResumen();
+    } else {
+        serviciosSection.style.display = 'block';
+        const serviciosContainer = document.getElementById('serviciosDisponibles');
+        
+        const barber = profesionales.find(p => p.id === barberId);
+        const barberServices = barber && barber.services 
+            ? servicios.filter(s => barber.services.includes(s.id))
+            : servicios;
 
-    // Renderizar servicios
-    const serviciosContainer = document.getElementById('serviciosDisponibles');
-    serviciosContainer.innerHTML = barberServices.map(s => `
-        <div class="servicio-item" data-id="${s.id}">
-            <div class="servicio-item__info">
-                <h4>${s.name}</h4>
-                <span>${s.duration} minutos</span>
+        serviciosContainer.innerHTML = barberServices.map(s => `
+            <div class="servicio-item" data-id="${s.id}">
+                <div class="servicio-item__info">
+                    <h4>${s.name}</h4>
+                    <span>${s.duration} minutos</span>
+                </div>
+                <div class="servicio-item__precio">
+                    <span class="precio">${formatPrice(s.price)}</span>
+                </div>
             </div>
-            <div class="servicio-item__precio">
-                <span class="precio">${formatPrice(s.price)}</span>
-            </div>
-        </div>
-    `).join('');
+        `).join('');
 
-    // Eventos de servicios
-    serviciosContainer.querySelectorAll('.servicio-item').forEach(item => {
-        item.addEventListener('click', () => selectServicio(item.dataset.id));
-    });
+        serviciosContainer.querySelectorAll('.servicio-item').forEach(item => {
+            item.addEventListener('click', () => selectServicio(item.dataset.id));
+        });
+    }
 
-    // Limpiar fecha y horarios
     document.getElementById('fechaTurno').value = '';
     document.getElementById('horariosDisponibles').innerHTML = '';
     updateResumen();
 
-    // Scroll a la sección
     document.getElementById('reserva').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -544,19 +718,12 @@ async function handleFechaChange() {
     const fechaInput = document.getElementById('fechaTurno');
     if (!fechaInput.value) return;
 
-    turnoActual.fecha = new Date(fechaInput.value);
+    const [year, month, day] = fechaInput.value.split('-');
+    turnoActual.fecha = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0);
     
-    
-    
-    
-    
-    // Obtener turnos tomados para esa fecha
     const appointments = await getBarberAppointments(turnoActual.barberId, turnoActual.fecha);
     
-    
-    // Generar horarios disponibles
     const slots = generateTimeSlots(turnoActual.fecha, turnoActual.barberId, appointments);
-    
     
     const container = document.getElementById('horariosDisponibles');
     
@@ -598,7 +765,14 @@ function updateResumen() {
         </div>
     `;
 
-    if (turnoActual.servicio) {
+    if (turnoActual.promocion) {
+        html += `
+            <div class="resumen-row">
+                <span>Promoción</span>
+                <span>${turnoActual.promocion.title}</span>
+            </div>
+        `;
+    } else if (turnoActual.servicio) {
         html += `
             <div class="resumen-row">
                 <span>Servicio</span>
@@ -625,11 +799,12 @@ function updateResumen() {
         `;
     }
 
-    if (turnoActual.servicio) {
+    const precio = turnoActual.promocion ? turnoActual.promocion.price : (turnoActual.servicio ? turnoActual.servicio.price : 0);
+    if (precio > 0) {
         html += `
             <div class="resumen-row total">
                 <span>Total</span>
-                <span>${formatPrice(turnoActual.servicio.price)}</span>
+                <span>${formatPrice(precio)}</span>
             </div>
         `;
     }
@@ -643,11 +818,8 @@ function volverAProfesionales() {
 }
 
 async function handleReservar() {
-    console.log('handleReservar llamado');
-    console.log('currentUser:', currentUser);
-    
-    if (!turnoActual.servicio) {
-        showNotification('Seleccioná un servicio', 'warning');
+    if (!turnoActual.servicio && !turnoActual.promocion) {
+        showNotification('Seleccioná un servicio o promoción', 'warning');
         return;
     }
     if (!turnoActual.fecha) {
@@ -668,21 +840,22 @@ async function handleReservar() {
     const pagoMetodo = document.querySelector('input[name="pago"]:checked').value;
 
     try {
-        // Obtener datos del cliente desde Firestore
         const userDoc = await db.collection('users').doc(currentUser.uid).get();
         const userName = userDoc.exists ? userDoc.data().name : (currentUser.displayName || 'Cliente');
         const userPhone = userDoc.exists ? userDoc.data().phone : (currentUser.phoneNumber || '');
 
-        console.log('Guardando turno para cliente:', currentUser.uid, userName);
+        const serviceId = turnoActual.promocion ? turnoActual.promocion.id : turnoActual.servicio.id;
+        const serviceName = turnoActual.promocion ? turnoActual.promocion.title : turnoActual.servicio.name;
+        const servicePrice = turnoActual.promocion ? turnoActual.promocion.price : turnoActual.servicio.price;
 
         const appointment = {
             clientId: currentUser.uid,
             clientName: userName,
             clientEmail: currentUser.email,
             clientPhone: userPhone,
-            serviceId: turnoActual.servicio.id,
-            serviceName: turnoActual.servicio.name,
-            servicePrice: turnoActual.servicio.price,
+            serviceId: serviceId,
+            serviceName: serviceName,
+            servicePrice: servicePrice,
             professionalId: turnoActual.barberId,
             professionalName: turnoActual.barberName,
             date: firebase.firestore.Timestamp.fromDate(turnoActual.fecha),
@@ -690,22 +863,30 @@ async function handleReservar() {
             status: 'pendiente',
             paymentMethod: pagoMetodo,
             paymentStatus: 'pending',
+            promotionId: turnoActual.promocion ? turnoActual.promocion.id : null,
+            promotionName: turnoActual.promocion ? turnoActual.promocion.title : null,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
         const docRef = await db.collection('appointments').add(appointment);
         console.log('Turno guardado con ID:', docRef.id);
 
+        // Limpiar promoción seleccionada
+        sessionStorage.removeItem('promocionSeleccionada');
+        sessionStorage.removeItem('servicioSeleccionado');
+
         // Mostrar confirmación
         const turnoModal = document.getElementById('turnoModal');
         const turnoDetalles = document.getElementById('turnoDetalles');
         
+        const precioFinal = turnoActual.promocion ? turnoActual.promocion.price : turnoActual.servicio.price;
+        
         turnoDetalles.innerHTML = `
             <p><strong>Barbero:</strong> ${turnoActual.barberName}</p>
-            <p><strong>Servicio:</strong> ${turnoActual.servicio.name}</p>
+            ${turnoActual.promocion ? `<p><strong>Promoción:</strong> ${turnoActual.promocion.title}</p>` : `<p><strong>Servicio:</strong> ${turnoActual.servicio.name}</p>`}
             <p><strong>Fecha:</strong> ${formatDate(turnoActual.fecha)}</p>
             <p><strong>Hora:</strong> ${turnoActual.hora}</p>
-            <p><strong>Total:</strong> ${formatPrice(turnoActual.servicio.price)}</p>
+            <p><strong>Total:</strong> ${formatPrice(precioFinal)}</p>
         `;
         
         turnoModal.classList.add('active');

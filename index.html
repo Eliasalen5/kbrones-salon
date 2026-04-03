@@ -42,10 +42,39 @@
 
     <main class="main-content">
         <section class="hero">
-            <div class="hero__content container">
-                <h1 class="hero__title">Tu estilo, nuestra pasión</h1>
-                <p class="hero__subtitle">Reserve su turno en Kbrones Salon, Baradero</p>
-                <a href="#profesionales" class="btn btn--primary btn--lg">Elegir Profesional</a>
+            <div class="hero__carousel" id="heroCarousel">
+                <div class="hero__slide active">
+                    <img src="assets/images/hero-bg.jpg" alt="Kbrones Salon">
+                </div>
+                <div class="hero__slide">
+                    <img src="assets/images/galeria-1.jpeg" alt="Kbrones Salon">
+                </div>
+                <div class="hero__slide">
+                    <img src="assets/images/galeria-2.jpeg" alt="Kbrones Salon">
+                </div>
+                <div class="hero__slide">
+                    <img src="assets/images/galeria-4.jpeg" alt="Kbrones Salon">
+                </div>
+                <div class="hero__slide">
+                    <img src="assets/images/galeria-5.jpeg" alt="Kbrones Salon">
+                </div>
+
+                <div class="hero__slide">
+                    <img src="assets/images/galeria-7.jpeg" alt="Kbrones Salon">
+                </div>
+                <div class="hero__overlay"></div>
+                <div class="hero__content container">
+                    <h1 class="hero__title">Tu estilo, nuestra pasión</h1>
+                    <p class="hero__subtitle">Reserve su turno en Kbrones Salon, Baradero</p>
+                    <a href="#profesionales" class="btn btn--primary btn--lg">Elegir Profesional</a>
+                </div>
+                <button class="hero__btn hero__btn--prev" id="heroPrev">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="hero__btn hero__btn--next" id="heroNext">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <div class="hero__dots" id="heroDots"></div>
             </div>
         </section>
 
@@ -53,6 +82,18 @@
             <div class="container">
                 <h2 class="section__title">Nuestros Servicios</h2>
                 <div class="servicios__grid" id="serviciosGrid"></div>
+            </div>
+        </section>
+
+        <section class="promociones" id="promociones">
+            <div class="container">
+                <h2 class="section__title">Promociones</h2>
+                <div class="promociones__grid" id="promocionesGrid">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Cargando promociones...</p>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -74,7 +115,7 @@
                     <div class="reserva-header" id="reservaHeader"></div>
                     
                     <div class="reserva-body">
-                        <div class="reserva-servicios">
+                        <div class="reserva-servicios" id="serviciosSection">
                             <h3><i class="fas fa-cut"></i> Seleccioná tu Servicio</h3>
                             <div class="servicios-disponibles" id="serviciosDisponibles"></div>
                         </div>

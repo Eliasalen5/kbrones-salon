@@ -37,6 +37,10 @@
                     <i class="fas fa-cut"></i>
                     <span>Servicios</span>
                 </div>
+                <div class="nav-item" data-section="promociones">
+                    <i class="fas fa-gift"></i>
+                    <span>Promociones</span>
+                </div>
                 <div class="nav-item" data-section="horarios">
                     <i class="fas fa-clock"></i>
                     <span>Horarios</span>
@@ -64,7 +68,7 @@
                 <h1 class="panel-header__title" id="sectionTitle">Estadísticas</h1>
                 <div class="panel-header__user">
                     <span id="userName">Dueño</span>
-                    <div class="panel-header__avatar">
+                    <div class="panel-header__avatar" id="headerAvatar">
                         <i class="fas fa-user"></i>
                     </div>
                 </div>
@@ -229,6 +233,23 @@
                     </div>
                 </section>
 
+                <!-- Promociones Section -->
+                <section class="section" id="promocionesSection">
+                    <div class="card">
+                        <div class="card__header">
+                            <h3 class="card__title">
+                                <i class="fas fa-gift"></i> Gestión de Promociones
+                            </h3>
+                            <button class="btn btn--primary" id="btnAgregarPromocion">
+                                <i class="fas fa-plus"></i> Agregar Promoción
+                            </button>
+                        </div>
+                        <div class="promociones-grid" id="promocionesTableBody">
+                            <div class="empty-state">Cargando...</div>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- Horarios Section -->
                 <section class="section" id="horariosSection">
                     <div class="card">
@@ -249,7 +270,52 @@
 
                 <!-- Config Section -->
                 <section class="section" id="configSection">
+                    <!-- Mi Perfil -->
                     <div class="card">
+                        <div class="card__header">
+                            <h3 class="card__title">
+                                <i class="fas fa-user"></i> Mi Perfil
+                            </h3>
+                        </div>
+                        <div class="perfil-section">
+                            <div class="perfil-avatar" id="perfilAvatar">
+                                <i class="fas fa-user"></i>
+                                <label class="perfil-avatar__upload" for="perfilFotoFile" title="Cambiar foto">
+                                    <i class="fas fa-plus"></i>
+                                </label>
+                            </div>
+                            <input type="file" id="perfilFotoFile" accept="image/*" style="display: none;">
+                            <div class="perfil-info">
+                                <div class="form-group">
+                                    <label>Nombre</label>
+                                    <input type="text" id="perfilNombre">
+                                </div>
+                                <div class="form-group">
+                                    <label>Email</label>
+                                    <input type="email" id="perfilEmail" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label>Teléfono</label>
+                                    <input type="tel" id="perfilTelefono">
+                                </div>
+                                <input type="hidden" id="perfilFotoUrl" value="">
+                                <div class="form-group">
+                                    <label>Contraseña Actual</label>
+                                    <input type="password" id="perfilPasswordActual" placeholder="Ingresá tu contraseña actual">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nueva Contraseña (dejar vacío para no cambiar)</label>
+                                    <input type="password" id="perfilPasswordNueva" placeholder="Mínimo 6 caracteres">
+                                </div>
+                                <button type="button" class="btn btn--primary" id="btnGuardarPerfil">
+                                    <i class="fas fa-save"></i> Guardar Perfil
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info del Local -->
+                    <div class="card" style="margin-top: 20px;">
                         <div class="card__header">
                             <h3 class="card__title">
                                 <i class="fas fa-store"></i> Información del Local
@@ -354,9 +420,56 @@
         </div>
     </div>
 
+    <!-- Modal Promoción -->
+    <div class="modal" id="promocionModal">
+        <div class="modal__content">
+            <div class="modal__header">
+                <h3 id="promocionModalTitle">Agregar Promoción</h3>
+                <button class="modal__close" id="closePromocionModal">&times;</button>
+            </div>
+            <form id="promocionForm">
+                <input type="hidden" id="promocionId">
+                <div class="form-group">
+                    <label>Título de la Promoción</label>
+                    <input type="text" id="promocionTitulo" placeholder="Ej: ¡2x1 en Cortes!" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="promocionDescripcion" rows="3" placeholder="Ej: Aprovechá esta oferta especial..." required></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Precio Promocional (ARS)</label>
+                        <input type="number" id="promocionPrecio" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Precio Anterior (opcional)</label>
+                        <input type="number" id="promocionPrecioViejo" placeholder="Para mostrar descuento">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Valido Hasta</label>
+                        <input type="date" id="promocionValidez" required>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="promocionActivo" checked>
+                            Promoción Activa
+                        </label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn--primary btn--block">
+                    <i class="fas fa-save"></i> Guardar Promoción
+                </button>
+            </form>
+        </div>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCd4HqPGMtiR0bHJD8GEozhfNl3-MG2tiw",
@@ -371,6 +484,7 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+        const storage = firebase.storage();
 
         let currentUser = null;
         let barbers = [];
@@ -404,21 +518,25 @@
         }
 
         async function loadData() {
-            const [barbersSnap, serviciosSnap, turnosSnap] = await Promise.all([
+            const [barbersSnap, serviciosSnap, turnosSnap, promocionesSnap] = await Promise.all([
                 db.collection('users').where('role', '==', 'barber').get(),
                 db.collection('services').get(),
-                db.collection('appointments').orderBy('date', 'desc').get()
+                db.collection('appointments').orderBy('date', 'desc').get(),
+                db.collection('promotions').get()
             ]);
             
             barbers = barbersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
             servicios = serviciosSnap.docs.map(d => ({ id: d.id, ...d.data() }));
             turnos = turnosSnap.docs.map(d => ({ id: d.id, ...d.data(), dateObj: d.data().date.toDate() }));
+            promociones = promocionesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
             
             renderBarbers();
             renderServicios();
             renderTurnos();
+            renderPromociones();
             loadHorarios();
             loadConfig();
+            loadPerfil();
         }
 
         function setupEventListeners() {
@@ -486,6 +604,9 @@
             // Guardar horarios
             document.getElementById('btnGuardarHorarios').addEventListener('click', saveHorarios);
 
+            // Perfil
+            document.getElementById('btnGuardarPerfil').addEventListener('click', savePerfil);
+
             // Config form
             document.getElementById('configForm').addEventListener('submit', saveConfig);
 
@@ -502,6 +623,7 @@
                 turnos: 'Turnos',
                 barberos: 'Barberos',
                 servicios: 'Servicios',
+                promociones: 'Promociones',
                 horarios: 'Horarios',
                 config: 'Configuración'
             };
@@ -898,6 +1020,215 @@
             }
         }
 
+        // Perfil
+        async function loadPerfil() {
+            if (!currentUser) return;
+            
+            document.getElementById('perfilEmail').value = currentUser.email || '';
+            
+            try {
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                if (userDoc.exists) {
+                    const data = userDoc.data();
+                    document.getElementById('perfilNombre').value = data.name || '';
+                    document.getElementById('perfilTelefono').value = data.phone || '';
+                    document.getElementById('perfilFotoUrl').value = data.photo || '';
+                    
+                    // Actualizar avatar
+                    // Actualizar avatar en sección perfil
+                    const avatar = document.getElementById('perfilAvatar');
+                    if (data.photo) {
+                        avatar.innerHTML = `
+                            <img src="${data.photo}" alt="Perfil">
+                            <label class="perfil-avatar__upload" for="perfilFotoFile" title="Cambiar foto">
+                                <i class="fas fa-plus"></i>
+                            </label>
+                        `;
+                    } else {
+                        avatar.innerHTML = `
+                            <i class="fas fa-user"></i>
+                            <label class="perfil-avatar__upload" for="perfilFotoFile" title="Agregar foto">
+                                <i class="fas fa-plus"></i>
+                            </label>
+                        `;
+                    }
+                    
+                    // Actualizar avatar en header
+                    const headerAvatar = document.getElementById('headerAvatar');
+                    if (data.photo) {
+                        headerAvatar.innerHTML = `<img src="${data.photo}" alt="Perfil">`;
+                    } else {
+                        headerAvatar.innerHTML = `<i class="fas fa-user"></i>`;
+                    }
+                    
+                    // Actualizar nombre en header
+                    if (data.name) {
+                        document.getElementById('userName').textContent = data.name;
+                    }
+                }
+            } catch (error) {
+                console.error('Error cargando perfil:', error);
+            }
+        }
+
+        async function savePerfil() {
+            if (!currentUser) return;
+            
+            const nombre = document.getElementById('perfilNombre').value;
+            const telefono = document.getElementById('perfilTelefono').value;
+            const fotoUrl = document.getElementById('perfilFotoUrl').value;
+            const passwordActual = document.getElementById('perfilPasswordActual').value;
+            const passwordNueva = document.getElementById('perfilPasswordNueva').value;
+            
+            try {
+                // Si quiere cambiar contraseña, validar la actual primero
+                if (passwordNueva) {
+                    if (!passwordActual) {
+                        showNotification('Ingresá tu contraseña actual', 'warning');
+                        return;
+                    }
+                    
+                    // Reautenticar al usuario
+                    const credential = firebase.auth.EmailAuthProvider.credential(
+                        currentUser.email,
+                        passwordActual
+                    );
+                    await currentUser.reauthenticateWithCredential(credential);
+                    
+                    if (passwordNueva.length < 6) {
+                        showNotification('La nueva contraseña debe tener al menos 6 caracteres', 'warning');
+                        return;
+                    }
+                    
+                    await currentUser.updatePassword(passwordNueva);
+                }
+                
+                // Actualizar datos en Firestore
+                await db.collection('users').doc(currentUser.uid).update({
+                    name: nombre,
+                    phone: telefono,
+                    photo: fotoUrl || ''
+                });
+                
+                // Actualizar nombre en Auth si cambió
+                if (nombre !== currentUser.displayName) {
+                    await currentUser.updateProfile({ displayName: nombre });
+                }
+                
+                // Actualizar avatar visual
+                const avatar = document.getElementById('perfilAvatar');
+                if (fotoUrl) {
+                    avatar.innerHTML = `<img src="${fotoUrl}" alt="Perfil">`;
+                } else {
+                    avatar.innerHTML = '<i class="fas fa-user"></i>';
+                }
+                
+                // Actualizar avatar en header
+                const headerAvatar = document.getElementById('headerAvatar');
+                if (fotoUrl) {
+                    headerAvatar.innerHTML = `<img src="${fotoUrl}" alt="Perfil">`;
+                } else {
+                    headerAvatar.innerHTML = '<i class="fas fa-user"></i>';
+                }
+                
+                document.getElementById('perfilPasswordActual').value = '';
+                document.getElementById('perfilPasswordNueva').value = '';
+                showNotification('Perfil actualizado correctamente', 'success');
+            } catch (error) {
+                console.error('Error:', error);
+                if (error.code === 'auth/wrong-password') {
+                    showNotification('Contraseña actual incorrecta', 'error');
+                } else if (error.code === 'auth/requires-recent-login') {
+                    showNotification('Necesitás iniciar sesión nuevamente', 'error');
+                } else {
+                    showNotification('Error al guardar: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // Subir foto de perfil (usando FileReader para evitar CORS)
+        document.getElementById('perfilFotoFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                showNotification('Seleccioná una imagen', 'error');
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) { // 5MB
+                showNotification('La imagen debe ser menor a 5MB', 'error');
+                return;
+            }
+            
+            try {
+                showNotification('Procesando imagen...', 'info');
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        // Comprimir imagen usando canvas
+                        const canvas = document.createElement('canvas');
+                        const maxSize = 300; // Tamaño máximo en px
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        if (width > height) {
+                            if (width > maxSize) {
+                                height *= maxSize / width;
+                                width = maxSize;
+                            }
+                        } else {
+                            if (height > maxSize) {
+                                width *= maxSize / height;
+                                height = maxSize;
+                            }
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Convertir a JPEG con calidad 0.7 para reducir tamaño
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        
+                        // Verificar que no supere 500KB
+                        if (compressedDataUrl.length > 500000) {
+                            showNotification('La imagen es muy grande, intenta con otra más pequeña', 'error');
+                            return;
+                        }
+                        
+                        // Actualizar campo con la imagen comprimida
+                        document.getElementById('perfilFotoUrl').value = compressedDataUrl;
+                        
+                        // Actualizar avatar con icono de +
+                        const avatar = document.getElementById('perfilAvatar');
+                        avatar.innerHTML = `
+                            <img src="${compressedDataUrl}" alt="Perfil">
+                            <label class="perfil-avatar__upload" for="perfilFotoFile" title="Cambiar foto">
+                                <i class="fas fa-plus"></i>
+                            </label>
+                        `;
+                        
+                        showNotification('Imagen cargada correctamente', 'success');
+                    };
+                    img.onerror = function() {
+                        showNotification('Error al procesar la imagen', 'error');
+                    };
+                    img.src = event.target.result;
+                };
+                reader.onerror = function() {
+                    showNotification('Error al leer la imagen', 'error');
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Error al cargar imagen', 'error');
+            }
+        });
+
         // Config
         async function loadConfig() {
             const doc = await db.collection('config').doc('barbershop').get();
@@ -930,7 +1261,19 @@
         }
 
         function formatDateShort(date) {
-            return new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'short' }).format(date);
+            if (!date) return 'Sin fecha';
+            let d;
+            if (typeof date === 'string') {
+                // Agregar hora para evitar problemas de zona horaria
+                const [year, month, day] = date.split('-');
+                d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            } else if (date.toDate) {
+                d = date.toDate();
+            } else {
+                d = new Date(date);
+            }
+            if (isNaN(d.getTime())) return 'Fecha inválida';
+            return new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'short' }).format(d);
         }
 
         function showNotification(message, type = 'info') {
@@ -944,6 +1287,116 @@
                 setTimeout(() => n.remove(), 300);
             }, 3000);
         }
+
+        // Promociones
+        async function loadPromociones() {
+            try {
+                const snapshot = await db.collection('promotions').get();
+                promociones = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderPromociones();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function renderPromociones() {
+            const container = document.getElementById('promocionesTableBody');
+            if (!container) return;
+
+            if (promociones.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-gift"></i><p>No hay promociones</p></div>';
+                return;
+            }
+
+            container.innerHTML = promociones.map(p => `
+                <div class="promocion-admin-card">
+                    <div class="promocion-admin-card__info">
+                        <h4>${p.title}</h4>
+                        <p>${p.description}</p>
+                        <div class="promocion-admin-card__meta">
+                            <span class="precio">${formatPrice(p.price)}</span>
+                            ${p.oldPrice ? `<span class="old-price"><s>${formatPrice(p.oldPrice)}</s></span>` : ''}
+                            <span class="status ${p.active ? 'status--success' : 'status--danger'}">${p.active ? 'Activa' : 'Inactiva'}</span>
+                        </div>
+                        <p class="validity"><i class="fas fa-calendar"></i> Válido hasta: ${formatDateShort(p.validUntil)}</p>
+                    </div>
+                    <div class="promocion-admin-card__actions">
+                        <button class="btn btn--dark btn--sm" onclick="editarPromocion('${p.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn--danger btn--sm" onclick="eliminarPromocion('${p.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.editarPromocion = async function(id) {
+            const promo = promociones.find(p => p.id === id);
+            if (!promo) return;
+
+            document.getElementById('promocionId').value = id;
+            document.getElementById('promocionTitulo').value = promo.title;
+            document.getElementById('promocionDescripcion').value = promo.description;
+            document.getElementById('promocionPrecio').value = promo.price;
+            document.getElementById('promocionPrecioViejo').value = promo.oldPrice || '';
+            document.getElementById('promocionValidez').value = promo.validUntil;
+            document.getElementById('promocionActivo').checked = promo.active;
+            document.getElementById('promocionModalTitle').textContent = 'Editar Promoción';
+            document.getElementById('promocionModal').classList.add('active');
+        };
+
+        window.eliminarPromocion = async function(id) {
+            if (!confirm('¿Eliminar esta promoción?')) return;
+            try {
+                await db.collection('promotions').doc(id).delete();
+                showNotification('Promoción eliminada', 'success');
+                await loadPromociones();
+            } catch (error) {
+                showNotification('Error al eliminar', 'error');
+            }
+        };
+
+        document.getElementById('btnAgregarPromocion').addEventListener('click', () => {
+            document.getElementById('promocionId').value = '';
+            document.getElementById('promocionForm').reset();
+            document.getElementById('promocionModalTitle').textContent = 'Agregar Promoción';
+            document.getElementById('promocionModal').classList.add('active');
+        });
+
+        document.getElementById('closePromocionModal').addEventListener('click', () => {
+            document.getElementById('promocionModal').classList.remove('active');
+        });
+
+        document.getElementById('promocionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('promocionId').value;
+            const data = {
+                title: document.getElementById('promocionTitulo').value,
+                description: document.getElementById('promocionDescripcion').value,
+                price: parseInt(document.getElementById('promocionPrecio').value),
+                oldPrice: document.getElementById('promocionPrecioViejo').value ? parseInt(document.getElementById('promocionPrecioViejo').value) : null,
+                validUntil: document.getElementById('promocionValidez').value,
+                active: document.getElementById('promocionActivo').checked,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                if (id) {
+                    await db.collection('promotions').doc(id).update(data);
+                    showNotification('Promoción actualizada', 'success');
+                } else {
+                    await db.collection('promotions').add(data);
+                    showNotification('Promoción creada', 'success');
+                }
+                document.getElementById('promocionModal').classList.remove('active');
+                await loadPromociones();
+            } catch (error) {
+                showNotification('Error al guardar', 'error');
+            }
+        });
     </script>
 </body>
 </html>
