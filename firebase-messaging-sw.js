@@ -5,9 +5,9 @@ firebase.initializeApp({
     apiKey: "AIzaSyCd4HqPGMtiR0bHJD8GEozhfNl3-MG2tiw",
     authDomain: "kbrones-salon-1997.firebaseapp.com",
     projectId: "kbrones-salon-1997",
-    storageBucket: "kbrones-salon-1997.appspot.com",
-    messagingSenderId: "474429558785",
-    appId: "1:474429558785:web:5f2c9d7e8b8e4a4c5b8e4a"
+    storageBucket: "kbrones-salon-1997.firebasestorage.app",
+    messagingSenderId: "335118146301",
+    appId: "1:335118146301:web:85aa85bd9ee97278d03c94"
 });
 
 const messaging = firebase.messaging();
