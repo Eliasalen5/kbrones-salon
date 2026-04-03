@@ -1188,51 +1188,6 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
 }
 
-.resumen-pago {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid var(--gray-medium);
-}
-
-.resumen-pago h4 {
-    margin-bottom: 10px;
-    font-size: 1rem;
-}
-
-.pago-opciones {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.pago-opcion {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 15px;
-    border: 2px solid var(--gray-medium);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.pago-opcion:hover {
-    border-color: var(--gold);
-}
-
-.pago-opcion.selected {
-    border-color: var(--gold);
-    background: var(--gold-light);
-}
-
-.pago-opcion input {
-    display: none;
-}
-
-.pago-opcion i {
-    color: var(--gold);
-}
-
 .turno-confirmado {
     text-align: center;
 }
@@ -2407,10 +2362,6 @@ h1, h2, h3, h4, h5, h6 {
     .reserva-header {
         flex-direction: column;
         text-align: center;
-    }
-
-    .pago-opciones {
-        flex-direction: column;
     }
 
     .grid-2 {

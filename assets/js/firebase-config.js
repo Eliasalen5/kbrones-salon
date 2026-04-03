@@ -17,6 +17,96 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// Inicializar FCM (Firebase Cloud Messaging)
+let messaging = null;
+const VAPID_KEY = 'BEl62iY2FKLtKGJNH6yMu0oHCCB7MLNaH6xHUC5nPQlGPqKAi8A7k9N8V5Z1L9hK3m2n4o5p6q7r8s9t0u1v2w3x4y5z6'; // Reemplazar con tu VAPID key público
+
+if ('Notification' in window && firebase.messaging.isSupported()) {
+    messaging = firebase.messaging();
+}
+
+// Funciones de notificaciones
+async function requestNotificationPermission() {
+    if (!messaging) {
+        console.log('FCM no está soportado en este navegador');
+        return null;
+    }
+
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            console.log('Permiso de notificaciones concedido');
+            const token = await getFCMToken();
+            return token;
+        } else {
+            console.log('Permiso de notificaciones denegado');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error al solicitar permiso de notificaciones:', error);
+        return null;
+    }
+}
+
+async function getFCMToken() {
+    if (!messaging) return null;
+    
+    try {
+        const token = await messaging.getToken({ vapidKey: VAPID_KEY });
+        console.log('FCM Token obtenido:', token);
+        return token;
+    } catch (error) {
+        console.error('Error al obtener FCM Token:', error);
+        return null;
+    }
+}
+
+async function saveFCMToken(userId) {
+    const token = await getFCMToken();
+    if (!token) return false;
+    
+    try {
+        await db.collection('users').doc(userId).update({
+            fcmToken: token,
+            fcmTokenUpdated: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        console.log('FCM Token guardado para usuario:', userId);
+        return true;
+    } catch (error) {
+        console.error('Error guardando FCM Token:', error);
+        return false;
+    }
+}
+
+// Escuchar notificaciones en primer plano
+function onForegroundMessage(callback) {
+    if (!messaging) return;
+    
+    messaging.onMessage((payload) => {
+        console.log('Mensaje en primer plano recibido:', payload);
+        
+        const notificationTitle = payload.notification?.title || 'Kbrones Salon';
+        const notificationBody = payload.notification?.body || 'Nuevo mensaje';
+        
+        if (Notification.permission === 'granted') {
+            new Notification(notificationTitle, {
+                body: notificationBody,
+                icon: 'assets/images/logo.png',
+                tag: 'kbrones-notification'
+            });
+        }
+        
+        if (callback) callback(payload);
+    });
+}
+
+// Exportar para uso global
+window.messaging = messaging;
+window.requestNotificationPermission = requestNotificationPermission;
+window.getFCMToken = getFCMToken;
+window.saveFCMToken = saveFCMToken;
+window.onForegroundMessage = onForegroundMessage;
+
 // Roles del sistema
 const ROLES = {
     ADMIN: 'admin',        // Admin general (dueño)

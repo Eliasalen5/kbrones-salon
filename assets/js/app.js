@@ -205,6 +205,27 @@ function setupAuthListener() {
                 }
                 // Si es cliente o no tiene rol definido, actualizar UI
                 updateAuthUI();
+                
+                // Solicitar permiso de notificaciones para clientes
+                if (typeof requestNotificationPermission === 'function') {
+                    const hasPermission = Notification.permission === 'granted';
+                    if (!hasPermission) {
+                        requestNotificationPermission().then(token => {
+                            if (token) {
+                                saveFCMToken(user.uid);
+                            }
+                        });
+                    } else if (typeof saveFCMToken === 'function') {
+                        saveFCMToken(user.uid);
+                    }
+                }
+                
+                // Escuchar notificaciones en primer plano
+                if (typeof onForegroundMessage === 'function') {
+                    onForegroundMessage((payload) => {
+                        showNotification(payload.notification?.body || 'Nueva notificación', 'info');
+                    });
+                }
             } catch (error) {
                 console.log('Error verificando rol:', error);
                 updateAuthUI();
@@ -837,8 +858,6 @@ async function handleReservar() {
         return;
     }
 
-    const pagoMetodo = document.querySelector('input[name="pago"]:checked').value;
-
     try {
         const userDoc = await db.collection('users').doc(currentUser.uid).get();
         const userName = userDoc.exists ? userDoc.data().name : (currentUser.displayName || 'Cliente');
@@ -861,10 +880,9 @@ async function handleReservar() {
             date: firebase.firestore.Timestamp.fromDate(turnoActual.fecha),
             time: turnoActual.hora,
             status: 'pendiente',
-            paymentMethod: pagoMetodo,
-            paymentStatus: 'pending',
             promotionId: turnoActual.promocion ? turnoActual.promocion.id : null,
             promotionName: turnoActual.promocion ? turnoActual.promocion.title : null,
+            reminderSent: false,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
@@ -890,12 +908,6 @@ async function handleReservar() {
         `;
         
         turnoModal.classList.add('active');
-
-        // Simular pago aprobado para testing
-        await db.collection('appointments').doc(docRef.id).update({
-            paymentStatus: 'approved',
-            status: 'confirmado'
-        });
 
     } catch (error) {
         console.error('Error al reservar:', error);
