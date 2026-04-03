@@ -19,7 +19,7 @@ const db = firebase.firestore();
 
 // Inicializar FCM (Firebase Cloud Messaging)
 let messaging = null;
-const VAPID_KEY = 'BEl62iY2FKLtKGJNH6yMu0oHCCB7MLNaH6xHUC5nPQlGPqKAi8A7k9N8V5Z1L9hK3m2n4o5p6q7r8s9t0u1v2w3x4y5z6'; // Reemplazar con tu VAPID key público
+const VAPID_KEY = 'BP54SxSDIEziDrOF2pKTZNB3hkxeZDX8rCuGvdCIqKX3uR-Ell0DMfE9138b3h_TMjWeSPV3og7dDSISsFpN4Vg'; // Reemplazar con tu VAPID key público
 
 if ('Notification' in window && firebase.messaging.isSupported()) {
     messaging = firebase.messaging();

@@ -6,7 +6,7 @@ const db = admin.firestore();
 
 // VAPID Key público (para referencia, el privado stays en Firebase Console)
 // En producción, guarda el VAPID key privado de forma segura
-const VAPID_KEY = 'BEl62iY2FKLtKGJNH6yMu0oHCCB7MLNaH6xHUC5nPQlGPqKAi8A7k9N8V5Z1L9hK3m2n4o5p6q7r8s9t0u1v2w3x4y5z6';
+const VAPID_KEY = 'BP54SxSDIEziDrOF2pKTZNB3hkxeZDX8rCuGvdCIqKX3uR-Ell0DMfE9138b3h_TMjWeSPV3og7dDSISsFpN4Vg';
 
 // ================================
 // Función: Notificar al Barber/Admin cuando se crea un turno
