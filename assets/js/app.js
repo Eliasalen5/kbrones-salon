@@ -205,27 +205,6 @@ function setupAuthListener() {
                 }
                 // Si es cliente o no tiene rol definido, actualizar UI
                 updateAuthUI();
-                
-                // Solicitar permiso de notificaciones para clientes
-                if (typeof requestNotificationPermission === 'function') {
-                    const hasPermission = Notification.permission === 'granted';
-                    if (!hasPermission) {
-                        requestNotificationPermission().then(token => {
-                            if (token) {
-                                saveFCMToken(user.uid);
-                            }
-                        });
-                    } else if (typeof saveFCMToken === 'function') {
-                        saveFCMToken(user.uid);
-                    }
-                }
-                
-                // Escuchar notificaciones en primer plano
-                if (typeof onForegroundMessage === 'function') {
-                    onForegroundMessage((payload) => {
-                        showNotification(payload.notification?.body || 'Nueva notificación', 'info');
-                    });
-                }
             } catch (error) {
                 console.log('Error verificando rol:', error);
                 updateAuthUI();
